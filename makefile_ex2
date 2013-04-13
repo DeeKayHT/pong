@@ -1,0 +1,68 @@
+LIBS=-lsfml-graphics -lsfml-window -lsfml-system
+
+all: thegame
+
+State.o: State.cpp
+        g++ -c "State.cpp" -o State.o
+
+PlayState.o: PlayState.cpp
+        g++ -c "PlayState.cpp" -o PlayState.o
+
+Game.o: Game.cpp
+        g++ -c "Game.cpp" -o Game.o
+
+Object.o: Object.cpp
+        g++ -c "Object.cpp" -o Object.o
+
+Player.o: Player.cpp
+        g++ -c "Player.cpp" -o Player.o
+
+thegame: Game.o State.o PlayState.o Object.o Player.o
+        @echo "** Building the game"
+        g++ -o thegame Game.o State.o PlayState.o Object.o Player.o $(LIBS)
+
+clean:
+        @echo "** Removing object files and executable..."
+        rm -f thegame *.o
+
+install:
+        @echo '** Installing...'
+        cp thegame /usr/bin
+
+uninstall:
+        @echo '** Uninstalling...'
+        rm -f /usr/bin/thegame
+
+#
+# Further improvements
+#
+
+LIBS=-lsfml-graphics -lsfml-window -lsfml-system
+CXX := g++
+
+all: thegame
+
+%.o: %.cpp
+        $(CXX) -c $< -o $@
+
+%.o: %.hpp
+        $(CXX) -c $< -o $@
+
+thegame: Game.o State.o PlayState.o Object.o Player.o
+        @echo "** Building the game"
+        $(CXX) -o thegame Game.o State.o PlayState.o Object.o Player.o $(LIBS)
+
+clean:
+        @echo "** Removing object files and executable..."
+        rm -f thegame *.o
+
+install:
+        @echo '** Installing...'
+        cp thegame /usr/bin/
+
+uninstall:
+        @echo '** Uninstalling...'
+        $(RM) /usr/bin/thegame
+
+# From:
+# http://en.sfml-dev.org/forums/index.php?topic=9037.0

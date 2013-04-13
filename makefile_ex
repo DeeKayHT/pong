@@ -1,0 +1,137 @@
+# makefile -- gnu make
+# aa
+# hello subversion
+
+H1=/pm
+
+OBJ= $(patsubst %.c,%.o,$(wildcard src/*.c))
+
+buildall=/pm/game
+
+CFLAGS=-DSYS_LINUX
+#CFLAGS+=-DDEBUG
+#CFLAGS+=-O0 -g
+#CFLAGS+=-DPRODUCTION -DNO_TOOL
+#CFLAGS+=-O3
+CFLAGS+=-Wno-sign-compare -Wno-conversion -Wno-missing-prototypes
+CFLAGS+=-I src
+CFLAGS+=-I /pm/include
+CFLAGS+=-I /pm/include/libtheoraplayer
+CFLAGS+=-I /usr/include/SDL
+CFLAGS+=-I /usr/X11/include
+CFLAGS+=-I /usr/local/include
+CFLAGS+=-I /usr/include/PhysX/v2.8.1/SDKs/Physics/include
+CFLAGS+=-I /usr/include/PhysX/v2.8.1/SDKs/Physics/include/cloth
+CFLAGS+=-I /usr/include/PhysX/v2.8.1/SDKs/Physics/include/fluids
+CFLAGS+=-I /usr/include/PhysX/v2.8.1/SDKs/Physics/include/softbody
+CFLAGS+=-I /usr/include/PhysX/v2.8.1/SDKs/NxCharacter/include
+CFLAGS+=-I /usr/include/PhysX/v2.8.1/SDKs/Foundation/include
+CFLAGS+=-I /usr/include/PhysX/v2.8.1/SDKs/PhysXLoader/include
+CFLAGS+=-I /usr/include/PhysX/v2.8.1/SDKs/Cooking/include
+CC=gcc
+CPP=g++
+
+#LD=gcc --mode=link
+LD=gcc
+LFLAGS=-L/usr/X11/lib -lGL -lGLU -lglut -lpthread -lrt
+LFLAGS+=-Xlinker -Map -Xlinker /pm/game.map -Xlinker -R /usr/lib/PhysX/v2.8.1/
+LIBS=$(H1)/lib/libg6.a
+#LIBS+=$(H1)/lib/libonline_g6.a
+LIBS+=$(H1)/lib/libpmrt_io.a
+LIBS+=$(H1)/lib/librio.a
+LIBS+=$(H1)/lib/glcgz2.a
+LIBS+=$(H1)/lib/libDongle.a
+LIBS+=$(H1)/lib/libSDL_mixer.a
+LIBS+=/usr/lib/libSDL.a
+LIBS+=/usr/lib/libSDLmain.a
+LIBS+=/usr/lib/libesd.so.0
+LIBS+=$(H1)/lib/libTelemetry.a
+LIBS+=$(H1)/lib/libXmlWrapper.a
+LIBS+=$(H1)/lib/libmodem2.a
+LIBS+=$(H1)/lib/lungif.a
+LIBS+=$(H1)/lib/libjamma.a
+LIBS+=$(H1)/lib/jpeglib.a
+LIBS+=$(H1)/lib/librockeyapi.a
+LIBS+=$(H1)/lib/libcard.a
+LIBS+=$(H1)/lib/librtdt_messages.a
+LIBS+=$(H1)/lib/libpmrt_compression.a
+LIBS+=$(H1)/lib/libpmrt_ssl.a
+LIBS+=$(H1)/lib/libpmrt_llm.a
+LIBS+=$(H1)/lib/libpsm_engine2.a
+LIBS+=$(H1)/lib/libssl.a
+LIBS+=$(H1)/lib/libcrypto.a
+LIBS+=$(H1)/lib/libpmrt_usb.a
+LIBS+=$(H1)/lib/libpmrt_utils.a
+LIBS+=$(H1)/lib/ogg_player.a
+LIBS+=$(H1)/lib/libtheoraplayer.a
+LIBS+=$(H1)/lib/libtheora.a
+LIBS+=$(H1)/lib/libvorbis.a
+LIBS+=$(H1)/lib/libogg.a
+LIBS+=$(H1)/lib/libxml2.a
+LIBS+=/usr/lib/libz.so
+LIBS+=$(H1)/lib/libGLEW.a
+LIBS+=$(H1)/lib/libHASP.a
+LIBS+=/usr/lib/libPhysXLoader.so.1
+LIBS+=$(H1)/lib/libusb-1.0.a
+LIBS+=$(H1)/lib/libgwen_static.a
+
+# irtrack3 libs
+LIBS+=$(H1)/lib/irtrack3.a
+LIBS+=$(H1)/lib/opencv/libcv.a
+LIBS+=$(H1)/lib/opencv/libcxcore.a
+LIBS+=$(H1)/lib/opencv2/libopencv_lapack.a
+LIBS+=$(H1)/lib/opencv2/libzlib.a
+LIBS+=$(H1)/lib/libftdi1.a
+
+LIBS+=$(H1)/lib/libpmrt_wifi.a
+LIBS+=$(H1)/lib/iwlib.a
+LIBS+=$(H1)/lib/libpmrt_projector.a
+LIBS+=$(H1)/lib/libozcollide.a
+LIBS+=/usr/lib/libcsv.so
+LIBS+=$(H1)/lib/libpmocl.a
+LIBS+=$(H1)/lib/chipmunk6.a
+
+.PHONY: all clean debug prod prodify strip
+
+
+all: debug
+
+clean:
+	rm src/*.o /pm/game /pm/game.map
+
+
+debug: CFLAGS+=-O0 -DDEBUG -ggdb
+debug: CPPFLAGS=$(CFLAGS)
+debug: LFLAGS+=-rdynamic
+debug: $(buildall)
+
+
+#prod: CFLAGS+=-O3 -DPRODUCTION  -DNO_TOOL -DUSE_ENCRYPTED_FILES -DUSE_ANTIDEBUG -ggdb -DFILE_REQUIRE_VERIFY
+prod: CFLAGS+=-O3 -DPRODUCTION -DNO_TOOL -ggdb  -DUSE_ANTIDEBUG 
+prod: CPPFLAGS=$(CFLAGS)
+prod: $(buildall) strip
+#prod: $(buildall) strip prodify 
+
+
+/pm/game: $(OBJ) $(OBJ2) $(LIBS)
+	$(LD) $(LFLAGS) $^ -o $@
+
+prodify: 
+	-cd /pm/utilities/prodify && make clean 
+	-cd /pm/utilities/prodify && make
+	/pm/prodify -d /pm/utilities/prodify/prodify_datatypes.h  -c /pm/g5/bbhd/bbhd-prodify.conf
+
+strip: 
+	-cp /pm/game /pm/game.withsymbols
+	-strip /pm/game
+
+
+
+src/%.o : src/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+src/%.o : src/%.cpp
+	$(CPP) $(CPPFLAGS) -c $< -o $@
+
+
+
